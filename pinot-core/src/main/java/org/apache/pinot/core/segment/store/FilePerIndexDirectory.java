@@ -84,7 +84,10 @@ class FilePerIndexDirectory extends ColumnIndexDirectory {
   private PinotDataBuffer getReadBufferFor(IndexKey key)
       throws IOException {
     if (indexBuffers.containsKey(key)) {
-      return indexBuffers.get(key);
+      PinotDataBuffer pinotDataBuffer = indexBuffers.get(key);
+      if (!pinotDataBuffer.isClosed()) {
+        return pinotDataBuffer;
+      }
     }
 
     File file = getFileFor(key.name, key.type);

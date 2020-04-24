@@ -259,10 +259,14 @@ public abstract class PinotDataBuffer implements Closeable {
   }
 
   private boolean _closeable;
+  private boolean _isClosed;
 
   protected PinotDataBuffer(boolean closeable) {
     _closeable = closeable;
+    _isClosed = false;
   }
+
+  public boolean isClosed() { return _isClosed; };
 
   @Override
   public synchronized void close()
@@ -284,6 +288,7 @@ public abstract class PinotDataBuffer implements Closeable {
         }
       }
       _closeable = false;
+      _isClosed = true;
     }
   }
 

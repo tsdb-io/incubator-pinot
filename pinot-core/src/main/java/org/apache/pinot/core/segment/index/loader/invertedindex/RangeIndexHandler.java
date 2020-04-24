@@ -105,18 +105,15 @@ public class RangeIndexHandler {
       FileUtils.touch(inProgress);
     } else {
       // Marker file exists, which means last run gets interrupted.
-      // Remove inverted index if exists.
-      // For v1 and v2, it's the actual inverted index. For v3, it's the temporary inverted index.
+      // Remove range index if exists.
+      // For v1 and v2, it's the actual range index. For v3, it's the temporary range index.
       FileUtils.deleteQuietly(rangeIndexFile);
     }
 
-    // Create new inverted index for the column.
+    // Create new range index for the column.
     LOGGER.info("Creating new range index for segment: {}, column: {}", _segmentName, column);
     int numDocs = columnMetadata.getTotalDocs();
-
-    PinotDataBuffer dictBuffer = _segmentWriter.getIndexFor(columnMetadata.getColumnName(), ColumnIndexType.DICTIONARY);
-    BaseImmutableDictionary dictionary = PhysicalColumnIndexContainer.loadDictionary(dictBuffer, columnMetadata, false);
-    handleDictionaryBasedColumn(dictionary, columnMetadata, numDocs);
+    handleDictionaryBasedColumn(columnMetadata, numDocs);
 
     // For v3, write the generated inverted index file into the single file and remove it.
     if (_segmentVersion == SegmentVersion.v3) {
@@ -129,8 +126,7 @@ public class RangeIndexHandler {
     LOGGER.info("Created inverted index for segment: {}, column: {}", _segmentName, column);
   }
 
-  private void handleDictionaryBasedColumn(BaseImmutableDictionary dictionary, ColumnMetadata columnMetadata,
-      int numDocs)
+  private void handleDictionaryBasedColumn(ColumnMetadata columnMetadata, int numDocs)
       throws IOException {
     try (RangeIndexCreator creator = new RangeIndexCreator(_indexDir, columnMetadata.getFieldSpec(),
         FieldSpec.DataType.INT, -1, -1, numDocs, columnMetadata.getTotalNumberOfEntries())) {
